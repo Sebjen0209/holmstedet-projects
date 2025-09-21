@@ -29,7 +29,7 @@ func NewHolmstedetProjectsStack(scope constructs.Construct, id string, props *Ho
 	// example resource
 	// queue := awssqs.NewQueue(stack, jsii.String("HolmstedetProjectsQueue"), &awssqs.QueueProps{
 	// 	VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
-	// })
+	// })cd
 
 	return stack
 }

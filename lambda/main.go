@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"lambda-func/app"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -20,5 +21,6 @@ func HandleRequest(project GitProjects) (string, error) {
 }
 
 func main() {
+	myAPP := app.NewApp()
 	lambda.Start(HandleRequest)
 }
