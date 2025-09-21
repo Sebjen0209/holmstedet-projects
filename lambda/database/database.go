@@ -21,9 +21,9 @@ type DynamoDBClient struct {
 type ProjectStore interface {
 	DoesProjectExist(string) (bool, error)
 	InsertProject()
-	EditProject()
-	DeleteProject()
 	GetProject()
+	DeleteProject()
+	EditProject()
 }
 
 func NewDynamoDBClient() DynamoDBClient {
@@ -35,12 +35,12 @@ func NewDynamoDBClient() DynamoDBClient {
 	}
 }
 
-func (d *DynamoDBClient) DoesProjectExist(projectTitle string) (bool, error) {
+func (d *DynamoDBClient) DoesProjectExist(projectID string) (bool, error) {
 	result, err := d.databaseStore.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]*dynamodb.AttributeValue{
-			"projectTitle": {
-				S: aws.String(projectTitle),
+			"projectID": {
+				S: aws.String(projectID),
 			},
 		},
 	})
@@ -61,6 +61,9 @@ func (d *DynamoDBClient) InsertProject(project types.Project) error {
 	item := &dynamodb.PutItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Item: map[string]*dynamodb.AttributeValue{
+			"projectID": {
+				S: aws.String(project.ProjectID),
+			},
 			"projectTitle": {
 				S: aws.String(project.Title),
 			},
@@ -81,13 +84,13 @@ func (d *DynamoDBClient) InsertProject(project types.Project) error {
 	return nil
 }
 
-func (d *DynamoDBClient) GetProject(projectTitle string) (types.Project, error) {
+func (d *DynamoDBClient) GetProject(projectID string) (types.Project, error) {
 	var project types.Project
 	result, err := d.databaseStore.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]*dynamodb.AttributeValue{
-			"projectTitle": {
-				S: aws.String(projectTitle),
+			"projectID": {
+				S: aws.String(projectID),
 			},
 		},
 	})
@@ -107,8 +110,53 @@ func (d *DynamoDBClient) GetProject(projectTitle string) (types.Project, error) 
 	return project, nil
 }
 
-func (d *DynamoDBClient) DeleteProject(projectTitle types.Project) error {
-	_, err := d.databaseStore.DeleteItem(project, &dynamodb.DeleteItemInput{
+func (d *DynamoDBClient) DeleteProject(projectID string) error {
+	item := &dynamodb.DeleteItemInput{
 		TableName: aws.String(TABLE_NAME),
-	})
+		Key: map[string]*dynamodb.AttributeValue{
+			"projectID": {
+				S: aws.String(projectID),
+			},
+		},
+	}
+
+	_, err := d.databaseStore.DeleteItem(item)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DynamoDBClient) EditProject(projectID string, updatedProject types.Project) (types.Project, error) {
+	item := &dynamodb.UpdateItemInput{
+		TableName: aws.String(TABLE_NAME), //the table we want to update
+		Key: map[string]*dynamodb.AttributeValue{ //Which item I want to update, identified by the "projectID"
+			"projectID": {
+				S: aws.String(projectID),
+			},
+		},
+		UpdateExpression: aws.String("SET title = :title, description = :desc, repo = :repo"), //which fields that I want updated
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{ //Maps placeholders (:title, :desc, :repo) to their new actual values.
+			":title": {S: aws.String(updatedProject.Title)},
+			":desc":  {S: aws.String(updatedProject.Description)},
+			":repo":  {S: aws.String(updatedProject.Repo)},
+		},
+		ReturnValues: aws.String("ALL_NEW"), //"ALL_NEW" asks DynamoDB to return the whole updated item.
+	}
+
+	result, err := d.databaseStore.UpdateItem(item) //calls the AWS SDK’s method to update a record in DynamoDB.
+	if err != nil {
+		return types.Project{}, err // if there is an error, we return an empty types struct, and an error
+	}
+
+	var updated types.Project
+	err = dynamodbattribute.UnmarshalMap(result.Attributes, &updated) //converts this map into your Go types.Project struct.
+	if err != nil {
+		return types.Project{}, err
+	}
+
+	return updated, nil
+
 }
