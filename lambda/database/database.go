@@ -15,23 +15,23 @@ const (
 	TABLE_NAME = "projectsTable"
 )
 
+type ProjectStore interface {
+	DoesProjectExist(string) (bool, error)
+	InsertProject(types.Project) error
+	GetProject(string) (types.Project, error)
+	DeleteProject(string) error
+	EditProject(string, types.Project) (types.Project, error)
+}
+
 type DynamoDBClient struct {
 	databaseStore *dynamodb.DynamoDB
 }
 
-type ProjectStore interface {
-	DoesProjectExist(string) (bool, error)
-	InsertProject()
-	GetProject()
-	DeleteProject()
-	EditProject()
-}
-
-func NewDynamoDBClient() DynamoDBClient {
+func NewDynamoDBClient() *DynamoDBClient {
 	dbSession := session.Must(session.NewSession())
 	db := dynamodb.New(dbSession)
 
-	return DynamoDBClient{
+	return &DynamoDBClient{
 		databaseStore: db,
 	}
 }

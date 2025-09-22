@@ -6,3 +6,9 @@ type Project struct {
 	Description string `json:"description"`
 	Repo        string `json:"repo"`
 }
+
+type RegisterProject struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Repo        string `json:"repo"`
+}
