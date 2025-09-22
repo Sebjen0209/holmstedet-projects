@@ -3,6 +3,6 @@ package types
 type Project struct {
 	ProjectID   string `json:"projectID"`
 	Title       string `json:"title"`
-	Description string `json:"desription"`
+	Description string `json:"description"`
 	Repo        string `json:"repo"`
 }

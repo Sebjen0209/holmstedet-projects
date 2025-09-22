@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/google/uuid"
 )
 
 const (
@@ -57,22 +58,18 @@ func (d *DynamoDBClient) DoesProjectExist(projectID string) (bool, error) {
 }
 
 func (d *DynamoDBClient) InsertProject(project types.Project) error {
+	if project.ProjectID == "" {
+		project.ProjectID = uuid.New().String()
+	}
+
 	//assemble the item (project)
 	item := &dynamodb.PutItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Item: map[string]*dynamodb.AttributeValue{
-			"projectID": {
-				S: aws.String(project.ProjectID),
-			},
-			"projectTitle": {
-				S: aws.String(project.Title),
-			},
-			"projectDescription": {
-				S: aws.String(project.Description),
-			},
-			"githubRepo": {
-				S: aws.String(project.Repo),
-			},
+			"projectID":   {S: aws.String(project.ProjectID)},
+			"title":       {S: aws.String(project.Title)},
+			"description": {S: aws.String(project.Description)},
+			"repo":        {S: aws.String(project.Repo)},
 		},
 	}
 
