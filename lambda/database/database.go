@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	TABLE_NAME = "projectsTable"
+	TABLE_NAME = "holmstedProjectTable"
 )
 
 type ProjectStore interface {

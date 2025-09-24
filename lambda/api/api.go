@@ -191,7 +191,7 @@ func (api *ApiHandler) EditProject(request events.APIGatewayProxyRequest) (event
 }
 
 func (api *ApiHandler) DeleteProject(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	projectID := request.PathParameters["projecktID"]
+	projectID := request.PathParameters["projectID"]
 
 	if projectID == "" {
 		return events.APIGatewayProxyResponse{
